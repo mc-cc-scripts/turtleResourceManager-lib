@@ -1,9 +1,13 @@
+--@requires settingsService
 ---@class SettingsService
-local settingsService = require("sSSSSSSSettingsService");
+local settingsService = require("settingsService");
+--@requires log
 ---@class Log
 local log = require("Log")
+--@requires helperFunctions
 ---@class HelperFunctions
 local helperFunctions = require("helperFunctions");
+--@requires turtleController
 ---@class turtleController
 local tController = require("turtleController");
 
