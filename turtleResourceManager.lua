@@ -1,6 +1,6 @@
 --@requires settingsService
----@class SettingsService
-local settingsService = require("./libs/settingsService");
+---@class SettingsManager
+local settingsService = require("./libs/settingsManager");
 --@requires log
 ---@class Log
 local log = require("./libs/log")
