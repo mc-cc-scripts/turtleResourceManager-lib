@@ -1,15 +1,15 @@
 --@requires settingsService
 ---@class SettingsService
-local settingsService = require("settingsService");
+local settingsService = require("./libs/settingsService");
 --@requires log
 ---@class Log
-local log = require("Log")
+local log = require("./libs/log")
 --@requires helperFunctions
 ---@class HelperFunctions
-local helperFunctions = require("helperFunctions");
+local helperFunctions = require("./libs/helperFunctions");
 --@requires turtleController
 ---@class turtleController
-local tController = require("turtleController");
+local tController = require("./libs/turtleController");
 
 
 
