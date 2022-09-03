@@ -1,4 +1,4 @@
---@requires settingsService
+--@requires settingsManager
 ---@class SettingsManager
 local settingsService = require("./libs/settingsManager");
 --@requires log
