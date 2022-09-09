@@ -181,7 +181,7 @@ function TurtleResourceManager.manageSpace(minEmpty, keepFunction, ...)
             if startingEmptySlots ~= minEmpty then
                 local emptySlots = startingEmptySlots
                 local itemsToCeep = SettingsService.setget('ItemsToCeep', nil, defaultItemsToCeep)
-                for i = 16, 1, -1 do
+                for i = 1, 16, 1 do
                     local item = turtle.getItemDetail(i)
                     -- if ceepFunction ~= func then ceep = true, otherwise exec ceepFunction
                     local keepItemFuncRet = function(itemParameter, parameter)
