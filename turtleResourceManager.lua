@@ -49,13 +49,13 @@ end
 ---@return number status 1 = successful, 2 = error, 3 = critical Error (couldnt pickup Chest)
 ---@return string | nil errorReason
 function TurtleResourceManager.suckItem(item, ...)
-    local fuelSlot = SettingsService.setget('FuelChestSlot', nil, defaultSlots.suckFrom)
+    local fuelSlot = settingsManager.setget('FuelChestSlot', nil, defaultSlots.suckFrom)
     local currentSlot = turtle.getSelectedSlot()
     turtle.select(fuelSlot)
 
     if (
         turtle.getItemDetail() ~= nil and
-            turtle.getItemDetail().name == SettingsService.setget('ChestType', nil, defaultChestType)) then
+            turtle.getItemDetail().name == settingsManager.setget('ChestType', nil, defaultChestType)) then
 
         -- TODO: Dynamic?
         local cDirection = chestDirection.Down
@@ -151,13 +151,13 @@ end
 ---@return integer
 ---@return string | nil errorReason
 function TurtleResourceManager.manageSpace(minEmpty, keepFunction, ...)
-    local itemChestSlot = SettingsService.setget('ItemChestSlot', nil, defaultSlots.DumpInto)
+    local itemChestSlot = settingsManager.setget('ItemChestSlot', nil, defaultSlots.DumpInto)
     local currentSlot = turtle.getSelectedSlot();
     turtle.select(itemChestSlot)
 
     if (
         turtle.getItemDetail() ~= nil and
-            turtle.getItemDetail().name == SettingsService.setget('ChestType', nil, defaultChestType)) then
+            turtle.getItemDetail().name == settingsManager.setget('ChestType', nil, defaultChestType)) then
         -- TODO: Dynamic?
         local cDirection = chestDirection.Down
         do -- Checks
@@ -180,7 +180,7 @@ function TurtleResourceManager.manageSpace(minEmpty, keepFunction, ...)
 
             if startingEmptySlots ~= minEmpty then
                 local emptySlots = startingEmptySlots
-                local itemsToCeep = SettingsService.setget('ItemsToCeep', nil, defaultItemsToCeep)
+                local itemsToCeep = settingsManager.setget('ItemsToCeep', nil, defaultItemsToCeep)
                 for i = 1, 16, 1 do
                     local item = turtle.getItemDetail(i)
                     -- if ceepFunction ~= func then ceep = true, otherwise exec ceepFunction
