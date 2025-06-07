@@ -1,0 +1,3 @@
+{
+  [ "test@TestSpec" ] = "I should be the text after the following require, but im not",
+}

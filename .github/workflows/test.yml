@@ -1,0 +1,40 @@
+name: Busted
+
+    
+on: [pull_request]
+
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: checkout
+      uses: actions/checkout@v2
+      with:
+        submodules: true
+
+    - name: get lua
+      uses: leafo/gh-actions-lua@v10
+      with: 
+        luaVersion: "5.1"
+
+    - name: get luarocks
+      uses: leafo/gh-actions-luarocks@v4
+      with: 
+        luaVersion: "5.1"
+
+    - name: get busted and luasocket
+      run: |
+        luarocks install busted
+        luarocks install luasocket
+        luarocks install luasec
+
+    - name: fetch dependencies
+      run: |
+        chmod +x ./fetch-deps.sh
+        ./fetch-deps.sh
+    
+    - name: test
+      run: |
+        busted tests

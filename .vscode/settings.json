@@ -1,0 +1,10 @@
+{
+    "Lua.diagnostics.globals": [
+        "settings",
+        "turtle",
+        "describe",
+        "before_each",
+        "it"
+    ],
+    "Lua.completion.autoRequire": false
+}
