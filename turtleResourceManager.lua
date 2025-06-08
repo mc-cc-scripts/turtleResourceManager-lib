@@ -16,36 +16,38 @@ local config = require("config")
 ---@type {[string]: tRMAction}
 local actionDirection = {
     Down = {
-        suck = function() return turtle.suckDown() end,
-        drop = function() return turtle.dropDown() end,
+        suck = function(count) return turtle.suckDown(count) end,
+        drop = function(count) return turtle.dropDown(count) end,
         place = function() return turtle.placeDown() end,
         dig = function() return turtle.digDown() end 
     },
     Forward = {
-        suck = function() return turtle.suck() end,
-        drop = function() return turtle.drop() end,
+        suck = function(count) return turtle.suck(count) end,
+        drop = function(count) return turtle.drop(count) end,
         place =function() return turtle.place() end,
         dig = function() return turtle.dig() end
     },
     Up = {
-        suck =function() return turtle.suckUp() end,
-        drop =function() return turtle.dropUp() end,
+        suck =function(count) return turtle.suckUp(count) end,
+        drop =function(count) return turtle.dropUp(count) end,
         place =function() return turtle.placeUp() end,
         dig =function() return turtle.digUp() end
     }
 }
 
 local defaultSettings = {
-    ["ChestSlots"] = {
-        DumpInto = {default = 15},
-        SuckFrom = {default = 16}
+    ["ChestSlots"] = 
+        {default = {
+            SuckFrom = 15,
+            DumpInto = 16
+        }
     },
     ["ChestDirection"] = {
         default = "Down"
     }
     ,
-    ["ItemsToCeep"] = {
-        {default = {["enderstorage:ender_chest"] = true}}
+    ["ItemsToKeep"] = {
+        default = {["enderstorage:ender_chest"] = true}
     },
     ["ChestType"] = {default = "enderstorage:ender_chest"}
 }
@@ -68,10 +70,10 @@ end
 ---@param item function | string | nil comparefunction(currentSlot, ...)| full itemname. Like minecraft:charcoal | nil = everything is ok
 ---@return number status 1 = successful, 2 = error, 3 = critical Error (couldnt pickup Chest)
 ---@return string | nil errorReason
-function TurtleResourceManager.suckItem(item, ...)
+function TurtleResourceManager:suckItem(item, ...)
     local fuelSlot = config:get("ChestSlots")
     if fuelSlot then
-        fuelSlot = fuelSlot.suckfrom --[[@as number]]
+        fuelSlot = fuelSlot.SuckFrom --[[@as number]]
     end
     local currentSlot = turtle.getSelectedSlot()
     turtle.select(fuelSlot)
@@ -174,15 +176,17 @@ end
 
 ---Dumps all Slots into the Items-Chest (Settings), so that [minEmpty] Slots are available.
 ---@param minEmpty number 1 - 14, as 2 are left for the Chests
----@param keepFunction function| nil can dump Item? If empty, only the chests stay
+---@param keepFunction? fun(item, args): boolean can dump Item? If empty, only the chests stay
+---@param ... any Args, which are parsed to the keepFunction
 ---@return integer 1 = successful, 2 = error, 3 = critical error (could not pick up chest)
 ---@return string | nil errorReason
-function TurtleResourceManager.manageSpace(minEmpty, keepFunction, ...)
+function TurtleResourceManager:manageSpace(minEmpty, keepFunction, ...)
     local itemChestSlot = config:get("ChestSlots")
     if not itemChestSlot or not itemChestSlot.DumpInto then
         local err = "Settings not setup => ChestSlots"
         return 2, err
     end
+    itemChestSlot = itemChestSlot.DumpInto
     local currentSlot = turtle.getSelectedSlot();
     turtle.select(itemChestSlot)
 
@@ -216,7 +220,7 @@ function TurtleResourceManager.manageSpace(minEmpty, keepFunction, ...)
                 end
 
                 local emptySlots = startingEmptySlots
-                local itemsToCeep = config:get("ItemsToCeep")
+                local itemsToCeep = config:get("ItemsToKeep")
                 
                 
                 -- if item can be dropped, do so
@@ -227,10 +231,10 @@ function TurtleResourceManager.manageSpace(minEmpty, keepFunction, ...)
                     end
                     if item ~= nil and itemsToCeep[item.name] == nil and (keepFunction(item, table.unpack(arg))) then
                         turtle.select(i)
-                        if not actionTable.drop() then
+                        if not actionTable.drop(turtle.getItemCount()) then
                             turtle.select(itemChestSlot)
                             if not actionTable.dig() then
-                                local err = 'Could not Pick up Item-Chest!\n'
+                                local err = 'Could not Pick up Item-Chest after beeing unable to drop item in slot!\n' .. turtle.getSelectedSlot()
                                 errorHandler(err, currentSlot)
                                 return 3, err
                             end
@@ -243,8 +247,8 @@ function TurtleResourceManager.manageSpace(minEmpty, keepFunction, ...)
                     end
                 end
                 turtle.select(itemChestSlot)
-                if (not actionTable.dig() or turtle.getItemDetail() ~= config:get("ChestType")) then
-                    local err = 'Could not Pick up Item-Chest!\n'
+                if (not actionTable.dig() or turtle.getItemDetail().name ~= config:get("ChestType")) then
+                    local err = 'Could not Pick up Item-Chest after clearing!\n'
                     errorHandler(err, currentSlot)
                     return 3, err
                 end
@@ -279,24 +283,27 @@ function TurtleResourceManager:checkSetup()
 
     if type(cT) ~= "string" then
         errorReason.Settings = {"Output", "Input"}
+        print("Settings not a string")
         return false, false, errorReason
     end
     local chestSlots = config:get("ChestSlots")
     if type(chestSlots) ~= "table" then
+        print("ChestSlots not a table", chestSlots)
         errorReason.Settings = {"Output", "Input"}
         return false, false, errorReason
     end
 
 
-    local manageSpace, suckItem, errorReason = false, false, {}
+    local manageSpace, suckItem = false, false
 
     local spaceChest = chestSlots and chestSlots.DumpInto
     if not spaceChest then
         manageSpace = false
         table.insert(errorReason.Settings, "Output")
-    elseif (not turtle.getItemDetail() or turtle.getItemDetail().name ~= cT) then
-            manageSpace = false
-            table.insert(errorReason.Missing, "Output")
+
+    elseif (not turtle.getItemDetail(spaceChest) or turtle.getItemDetail(spaceChest).name ~= cT) then
+        manageSpace = false
+        table.insert(errorReason.Missing, "Output")
     else
             manageSpace = true
     end
@@ -306,7 +313,7 @@ function TurtleResourceManager:checkSetup()
     if not suckChest then
         suckItem = false
         table.insert(errorReason.Settings, "Input")
-    elseif (not turtle.getItemDetail() or turtle.getItemDetail().name ~= cT) then
+    elseif (not turtle.getItemDetail(suckChest) or turtle.getItemDetail(suckChest).name ~= cT) then
         suckItem = false
         table.insert(errorReason.Missing, "Input")
     else
@@ -316,7 +323,6 @@ function TurtleResourceManager:checkSetup()
     return manageSpace, suckItem, errorReason
 
 end
-
 
 ---sets the Slots for the input / output Chests
 ---@param slotSettings table<"DumpInto" | "SuckFrom", number>

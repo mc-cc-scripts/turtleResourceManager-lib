@@ -4,7 +4,8 @@
         "turtle",
         "describe",
         "before_each",
-        "it"
+        "it",
+        "pending"
     ],
     "Lua.completion.autoRequire": false
 }

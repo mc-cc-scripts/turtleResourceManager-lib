@@ -35,6 +35,7 @@ package.path = "libs/?.lua;"
 
 _G.settings = require("settings")
 _G.vector = require("vector")
+_G.textutils = require("textutils")
 
 ---@type HelperFunctions
 local helperFunctions = require("helperFunctions")
@@ -51,32 +52,37 @@ local itemStone = {
     name = "minecraft:stone",
     count = 64,
     equipable = false,
-    placeAble = false
+    placeAble = false,
+    maxcount = 64
 }
 local itemPickAxe = {
     name = "minecraft:diamond_pickaxe",
     count = 1,
     equipable = true,
-    placeAble = false
+    placeAble = false,
+    maxcount = 64
 }
 local itemChunkLoad = {
     name = "advancedperipherals:chunk_controller",
     count = 1,
     equipable = true,
-    placeAble = false
+    placeAble = false,
+    maxcount = 16
 }
 local itemLog = {
     name = "minecraft:oak_log",
     count = 64,
     equipable = false,
-    placeAble = true
+    placeAble = true,
+    maxcount = 64
 }
 ---@type Item
 local itemEnderChest = {
-    name = "enderchests:ender_chest",
+    name = "enderstorage:ender_chest",
     count = 1,
     equipable = false,
     placeAble = true,
+    maxcount = 64
 }
 
 
@@ -89,6 +95,7 @@ local function beforeEach()
     _G.turtle = turtleEmulator:createTurtle()
     _G.peripheral = turtle:getPeripheralModule()
 
+
 end 
 
 describe("Check Errors", function()
@@ -96,30 +103,68 @@ describe("Check Errors", function()
         beforeEach()
     end)
     it("CheckSetup", function()
+        local dumpInto, suckFrom, errorReason = turtleResourceManager:checkSetup()
+        assert.are.same({Missing = {"Output", "Input"}, Settings = {}}, errorReason)
+        assert.is_false(dumpInto)
+        assert.is_false(suckFrom)
     end)
+    -- TODO: More tests
 end)
 
 describe("Clean Inventory", function()
-    local inputChest, outpuChest
+    local inputChest, outputChest
     before_each(function ()
         beforeEach()
         local tmpItem
-        for i = 2, 13, 1 do
+        for i = 3, 13, 1 do
             tmpItem = helperFunctions.deepCopy(itemStone) --[[@as Item]]
             turtle.addItemToInventory(tmpItem, i)
         end
-        tmpItem = helperFunctions.deepCopy(itemStone) --[[@as Item]]
-        turtle.addItemToInventory(tmpItem, 15)
-        inputChest = turtleEmulator:addInventoryToItem(tmpItem)
-        tmpItem = helperFunctions.deepCopy(itemStone) --[[@as Item]]
+        tmpItem = helperFunctions.deepCopy(itemEnderChest) --[[@as Item]]
         turtle.addItemToInventory(tmpItem, 16)
-        outpuChest = turtleEmulator:addInventoryToItem(tmpItem)
+        outputChest = turtleEmulator:addInventoryToItem(tmpItem)
     end)
     it("CheckSetup", function()
         local dumpInto, suckFrom, errorReason = turtleResourceManager:checkSetup()
-        assert.are.equal({}, errorReason)
+        assert.are.same({Settings = {}, Missing = {"Input"}}, errorReason)
         assert.is_true(dumpInto)
-        assert.is_true(suckFrom)
+        assert.is_false(suckFrom)
+    end)
+    it("clear up all", function()
+        local status, reason = turtleResourceManager:manageSpace(15, nil)
+        assert.are.same(nil, reason)
+        assert.are.equal(1, status)
+        for i = 1, 15, 1 do
+            assert.is.falsy(turtle.getItemDetail(i))
+        end
+    end)
+    it("Clear up default filter", function()
+        local tmpItem = helperFunctions.deepCopy(itemEnderChest) --[[@as Item]]
+        turtle.addItemToInventory(tmpItem, 1)
+        local status, reason = turtleResourceManager:manageSpace(14, nil)
+        assert.are.same(nil, reason)
+        assert.are.equal(1, status)
+        assert.are.same("enderstorage:ender_chest", turtle.getItemDetail(1).name)
+        for i = 2, 15, 1 do
+            assert.is.falsy(turtle.getItemDetail(i))
+        end
+    end)
+    it("Clear up default filter + custom filter string", function()
+        local tmpItem = helperFunctions.deepCopy(itemEnderChest) --[[@as Item]]
+        turtle.addItemToInventory(tmpItem, 1)
+        tmpItem = helperFunctions.deepCopy(itemPickAxe)
+        turtle.addItemToInventory(tmpItem, 2)
+        local filterFunction = function (item)
+            return string.find(item.name, "pickaxe") == nil
+        end
+        local status, reason = turtleResourceManager:manageSpace(13, filterFunction)
+        assert.are.same(nil, reason)
+        assert.are.equal(1, status)
+        assert.are.same("enderstorage:ender_chest", turtle.getItemDetail(1).name)
+        assert.are.same("minecraft:diamond_pickaxe", turtle.getItemDetail(2).name)
+        for i = 3, 15, 1 do
+            assert.is.falsy(turtle.getItemDetail(i))
+        end
     end)
 end)
 
