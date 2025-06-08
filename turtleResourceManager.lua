@@ -1,11 +1,14 @@
 --@requires helperFunctions
+
+
+local scm = require("./scm")
 ---@type HelperFunctions
-local helperFunctions = require("helperFunctions");
+local helperFunctions = scm:load("helperFunctions");
 --@requires turtleController
 ---@type turtleController
-local tController = require("turtleController");
+local tController = scm:load("turtleController");
 ---@type Config
-local config = require("config")
+local config = scm:load("config")
 
 ---@class tRMAction
 ---@field suck function
