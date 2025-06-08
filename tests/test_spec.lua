@@ -78,7 +78,7 @@ local itemLog = {
 }
 ---@type Item
 local itemEnderChest = {
-    name = "enderstorage:ender_chest",
+    name = "enderchests:ender_chest",
     count = 1,
     equipable = false,
     placeAble = true,
@@ -144,7 +144,7 @@ describe("Clean Inventory", function()
         local status, reason = turtleResourceManager:manageSpace(14, nil)
         assert.are.same(nil, reason)
         assert.are.equal(1, status)
-        assert.are.same("enderstorage:ender_chest", turtle.getItemDetail(1).name)
+        assert.are.same("enderchests:ender_chest", turtle.getItemDetail(1).name)
         for i = 2, 15, 1 do
             assert.is.falsy(turtle.getItemDetail(i))
         end
@@ -160,7 +160,7 @@ describe("Clean Inventory", function()
         local status, reason = turtleResourceManager:manageSpace(13, filterFunction)
         assert.are.same(nil, reason)
         assert.are.equal(1, status)
-        assert.are.same("enderstorage:ender_chest", turtle.getItemDetail(1).name)
+        assert.are.same("enderchests:ender_chest", turtle.getItemDetail(1).name)
         assert.are.same("minecraft:diamond_pickaxe", turtle.getItemDetail(2).name)
         for i = 3, 15, 1 do
             assert.is.falsy(turtle.getItemDetail(i))

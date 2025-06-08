@@ -47,9 +47,9 @@ local defaultSettings = {
     }
     ,
     ["ItemsToKeep"] = {
-        default = {["enderstorage:ender_chest"] = true}
+        default = {["enderchests:ender_chest"] = true}
     },
-    ["ChestType"] = {default = "enderstorage:ender_chest"}
+    ["ChestType"] = {default = "enderchests:ender_chest"}
 }
 
 ---@class TurtleResourceManager
