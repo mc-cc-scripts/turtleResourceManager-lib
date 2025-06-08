@@ -69,6 +69,16 @@ local function errorHandler(content, oldSlot)
     --TODO Logger
 end
 
+function TurtleResourceManager:getFreeSlots()
+    local emptySlots = 0
+        for i = 1, 16 do
+        if turtle.getItemDetail(i) == nil then
+            emptySlots = emptySlots + 1
+        end
+    end
+    return emptySlots
+end
+
 ---If a Fuel-Chest is available, Checks if it contains fuel, takes a stack of it, and puts in into the next empty Slot. Then Picks up Chest again.
 ---@param item function | string | nil comparefunction(currentSlot, ...)| full itemname. Like minecraft:charcoal | nil = everything is ok
 ---@return number status 1 = successful, 2 = error, 3 = critical Error (couldnt pickup Chest)
@@ -204,12 +214,7 @@ function TurtleResourceManager:manageSpace(minEmpty, keepFunction, ...)
         local actionTable = actionDirection[chestDir]
         do -- Checks
 
-            local startingEmptySlots = 0
-            for i = 1, 16 do
-                if turtle.getItemDetail(i) == nil then
-                    startingEmptySlots = startingEmptySlots + 1
-                end
-            end
+            local startingEmptySlots = self:getFreeSlots()
 
             if minEmpty > startingEmptySlots then
 
